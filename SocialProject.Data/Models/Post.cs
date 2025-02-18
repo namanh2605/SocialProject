@@ -6,7 +6,7 @@ namespace SocialProject.Data.Models
     {
         [Key]
 
-        public int PostId { get; set; }
+        public int Id { get; set; }
 
         public string Content { get; set; }
 
