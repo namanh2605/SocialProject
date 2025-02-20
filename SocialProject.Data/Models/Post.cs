@@ -18,5 +18,9 @@ namespace SocialProject.Data.Models
 
         public DateTime DateUpdated { get; set; }
 
+        public int UserId { get; set; }
+
+        public User User { get; set; }
+
     }
 }

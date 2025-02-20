@@ -11,5 +11,7 @@ namespace SocialProject.Data.Models
         public int Id { get; set; }
         public string FullName { get; set; }
         public string ProfilePictureUrl { get; set; }
+
+        public ICollection<Post> Posts { get; set; } = new List<Post>();
     }
 }
