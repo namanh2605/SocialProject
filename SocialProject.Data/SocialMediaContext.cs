@@ -18,5 +18,5 @@ public partial class SocialMediaContext : DbContext
 
     
     public DbSet<Post> Posts { get; set; }
-
+    public DbSet<User> Users { get; set; }
 }
