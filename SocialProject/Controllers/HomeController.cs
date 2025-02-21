@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data;
+using SocialProject.Data.Models;
+using SocialProject.ViewModals;
 using System;
 using System.Diagnostics;
 
@@ -25,8 +27,29 @@ namespace SocialProject.Controllers
 
             return View(allPosts);
         }
+        [HttpPost]
+        public async Task<IActionResult> CreatePost(PostVM post)
+        {
+            int loggedInUser = 1;
 
-     
+            var newPost = new Post
+            {
+                Content = post.Content,
+                DateCreated = DateTime.UtcNow,
+                DateUpdated = DateTime.UtcNow,
+                ImageUrl = "",
+                NrOfReports = 0,
+                UserId = loggedInUser
+            };
+
+            //Add the post to the database
+            await _context.Posts.AddAsync(newPost);
+            await _context.SaveChangesAsync();
+
+            //Redirect to the index page
+            return RedirectToAction("Index");
+        }
+
 
     }
 }
