@@ -1,0 +1,66 @@
+﻿/* Body and overall page background */
+body {
+    background-color: #ffffff; /* White background for the page */
+    color: #000; /* Black text */
+}
+
+/* Text input area */
+textarea, input[type="text"] {
+    background-color: #ffffff; /* White background for input fields */
+    color: #000; /* Black text */
+    border: 1px solid #ddd; /* Light border */
+}
+
+/* Feed area and posts */
+#site__main .bg-white {
+    background-color: #ffffff; /* White background for feed and posts */
+    color: #000; /* Black text */
+}
+
+/* Comment area */
+.comment-box, .post-box {
+    background-color: #ffffff; /* White background */
+    color: #000; /* Black text */
+    border: 1px solid #ddd; /* Light border */
+}
+
+/* Sidebar and trend area background */
+.sidebar, .sidebar .box, .trend-box {
+    background-color: #ffffff; /* White background */
+    color: #000; /* Black text */
+    border: 1px solid #ddd; /* Light border */
+}
+
+/* Links inside posts */
+a {
+    color: #000; /* Black color for links */
+}
+
+/* Button styling */
+button, .button {
+    background-color: #ffffff; /* White background */
+    color: #000; /* Black text */
+    border: 1px solid #ddd; /* Light border */
+}
+
+    /* Hover effect for buttons */
+    button:hover, .button:hover {
+        background-color: #f0f0f0; /* Light gray background on hover */
+    }
+
+/* Sidebar items */
+#site__sidebar a {
+    color: #000; /* Black text for sidebar items */
+}
+
+/* Top bar background */
+header {
+    background-color: #ffffff; /* White background for top bar */
+    color: #000; /* Black text */
+    border-bottom: 1px solid #ddd; /* Light border */
+}
+
+    /* Ensure icons and buttons are clearly visible */
+    header .icon {
+        color: #000; /* Ensure icons are black */
+    }
