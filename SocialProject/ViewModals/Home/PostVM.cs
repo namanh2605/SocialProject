@@ -1,4 +1,4 @@
-﻿namespace SocialProject.ViewModals
+﻿namespace SocialProject.ViewModals.Home
 {
     public class PostVM
     {

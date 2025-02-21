@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data;
 using SocialProject.Data.Models;
-using SocialProject.ViewModals;
+using SocialProject.ViewModals.Home;
 using System;
 using System.Diagnostics;
 
@@ -23,6 +23,7 @@ namespace SocialProject.Controllers
         {
             var allPosts = await _context.Posts
                 .Include(n => n.User)
+                .OrderByDescending(n => n.DateCreated)
                 .ToListAsync();
 
             return View(allPosts);
