@@ -25,6 +25,8 @@ public partial class SocialMediaContext : DbContext
 
     public DbSet<Favorite> Favorites { get; set; }
 
+    public DbSet<Report> Reports { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
