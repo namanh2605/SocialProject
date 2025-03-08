@@ -23,6 +23,8 @@ public partial class SocialMediaContext : DbContext
 
     public DbSet<Comment> Comments { get; set; }
 
+    public DbSet<Favorite> Favorites { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
@@ -55,6 +57,22 @@ public partial class SocialMediaContext : DbContext
             .HasOne(l => l.User)
             .WithMany(u => u.Comments)
             .HasForeignKey(l => l.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+
+        modelBuilder.Entity<Favorite>()
+            .HasKey(f => new { f.PostId, f.UserId });
+
+        modelBuilder.Entity<Favorite>()
+            .HasOne(f => f.Post)
+            .WithMany(p => p.Favorites)
+            .HasForeignKey(f => f.PostId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<Favorite>()
+            .HasOne(f => f.User)
+            .WithMany(u => u.Favorites)
+            .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
         base.OnModelCreating(modelBuilder);
