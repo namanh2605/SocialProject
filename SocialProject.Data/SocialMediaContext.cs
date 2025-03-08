@@ -75,6 +75,21 @@ public partial class SocialMediaContext : DbContext
             .HasForeignKey(f => f.UserId)
             .OnDelete(DeleteBehavior.Restrict);
 
+        modelBuilder.Entity<Report>()
+                 .HasKey(f => new { f.PostId, f.UserId });
+
+        modelBuilder.Entity<Report>()
+            .HasOne(f => f.Post)
+            .WithMany(p => p.Reports)
+            .HasForeignKey(f => f.PostId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        modelBuilder.Entity<Report>()
+            .HasOne(f => f.User)
+            .WithMany(u => u.Reports)
+            .HasForeignKey(f => f.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         base.OnModelCreating(modelBuilder);
     }
 }
