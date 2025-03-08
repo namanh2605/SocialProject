@@ -22,5 +22,7 @@ namespace SocialProject.Data.Models
 
         public User User { get; set; }
 
+        public ICollection<Like> Likes { get; set; } = new List<Like>();
+
     }
 }
