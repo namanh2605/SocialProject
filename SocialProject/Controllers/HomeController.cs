@@ -50,7 +50,7 @@ namespace SocialProject.Controllers
                 string rootFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
                 if (post.Image.ContentType.Contains("image"))
                 {
-                    string rootFolderPathImages = Path.Combine(rootFolderPath, "images");
+                    string rootFolderPathImages = Path.Combine(rootFolderPath, "images/uploaded");
                     Directory.CreateDirectory(rootFolderPathImages);
 
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(post.Image.FileName);
@@ -60,7 +60,7 @@ namespace SocialProject.Controllers
                         await post.Image.CopyToAsync(stream);
 
                     //Set the URL to the newPost object
-                    newPost.ImageUrl = "/images/" + fileName;
+                    newPost.ImageUrl = "/images/uploaded/" + fileName;
                 }
             }
 
