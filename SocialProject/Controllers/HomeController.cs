@@ -24,6 +24,7 @@ namespace SocialProject.Controllers
             var allPosts = await _context.Posts
                 .Include(n => n.User)
                 .Include(n => n.Likes)
+                .Include(n => n.Comments).ThenInclude(n => n.User)
                 .OrderByDescending(n => n.DateCreated)
                 .ToListAsync();
 
@@ -92,6 +93,25 @@ namespace SocialProject.Controllers
                 await _context.Likes.AddAsync(newLike);
                 await _context.SaveChangesAsync();
             }
+
+            return RedirectToAction("Index");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> AddPostComment(PostCommentVM postCommentVM)
+        {
+            int loggedInUserId = 1;
+
+            var newComment = new Comment()
+            {
+                UserId = loggedInUserId,
+                PostId = postCommentVM.PostId,
+                Content = postCommentVM.Content,
+                DateCreated = DateTime.UtcNow,
+                DateUpdated = DateTime.UtcNow
+            };
+            await _context.Comments.AddAsync(newComment);
+            await _context.SaveChangesAsync();
 
             return RedirectToAction("Index");
         }
