@@ -23,7 +23,7 @@ namespace SocialProject.Controllers
         {
             int loggedInUserId = 1;
             var allPosts = await _context.Posts
-                .Where(n => (!n.IsPrivate || n.UserId == loggedInUserId) && n.Reports.Count < 5)
+                .Where(n => (!n.IsPrivate || n.UserId == loggedInUserId) && n.Reports.Count < 5 && !n.IsDeleted)
                 .Include(n => n.User)
                 .Include(n => n.Likes)
                 .Include(n => n.Favorites)
@@ -192,6 +192,20 @@ namespace SocialProject.Controllers
             if (commentDb != null)
             {
                 _context.Comments.Remove(commentDb);
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction("Index");
+        }
+        [HttpPost]
+        public async Task<IActionResult> PostRemove(PostRemoveVM postRemoveVM)
+        {
+            var postDb = await _context.Posts.FirstOrDefaultAsync(c => c.Id == postRemoveVM.PostId);
+
+            if (postDb != null)
+            {
+                postDb.IsDeleted = true;
+                _context.Posts.Update(postDb);
                 await _context.SaveChangesAsync();
             }
 
