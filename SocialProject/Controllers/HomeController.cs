@@ -1,3 +1,6 @@
+using SocialProject.Data;
+using SocialProject.Data.Models;
+using SocialProject.ViewModals.Home;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data;
@@ -22,6 +25,7 @@ namespace SocialProject.Controllers
         public async Task<IActionResult> Index()
         {
             int loggedInUserId = 1;
+
             var allPosts = await _context.Posts
                 .Where(n => (!n.IsPrivate || n.UserId == loggedInUserId) && n.Reports.Count < 5 && !n.IsDeleted)
                 .Include(n => n.User)
@@ -34,11 +38,14 @@ namespace SocialProject.Controllers
 
             return View(allPosts);
         }
+
         [HttpPost]
         public async Task<IActionResult> CreatePost(PostVM post)
         {
+            //Get the logged in user
             int loggedInUser = 1;
 
+            //Create a new post
             var newPost = new Post
             {
                 Content = post.Content,
@@ -49,12 +56,13 @@ namespace SocialProject.Controllers
                 UserId = loggedInUser
             };
 
+            //Check and save the image
             if (post.Image != null && post.Image.Length > 0)
             {
                 string rootFolderPath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
                 if (post.Image.ContentType.Contains("image"))
                 {
-                    string rootFolderPathImages = Path.Combine(rootFolderPath, "images/uploaded");
+                    string rootFolderPathImages = Path.Combine(rootFolderPath, "images/posts");
                     Directory.CreateDirectory(rootFolderPathImages);
 
                     string fileName = Guid.NewGuid().ToString() + Path.GetExtension(post.Image.FileName);
@@ -63,21 +71,26 @@ namespace SocialProject.Controllers
                     using (var stream = new FileStream(filePath, FileMode.Create))
                         await post.Image.CopyToAsync(stream);
 
-                    newPost.ImageUrl = "/images/uploaded/" + fileName;
+                    //Set the URL to the newPost object
+                    newPost.ImageUrl = "/images/posts/" + fileName;
                 }
             }
 
+            //Add the post to the database
             await _context.Posts.AddAsync(newPost);
             await _context.SaveChangesAsync();
 
+            //Redirect to the index page
             return RedirectToAction("Index");
         }
+
 
         [HttpPost]
         public async Task<IActionResult> TogglePostLike(PostLikeVM postLikeVM)
         {
             int loggedInUserId = 1;
 
+            //check if user has already liked the post
             var like = await _context.Likes
                 .Where(l => l.PostId == postLikeVM.PostId && l.UserId == loggedInUserId)
                 .FirstOrDefaultAsync();
@@ -106,6 +119,7 @@ namespace SocialProject.Controllers
         {
             int loggedInUserId = 1;
 
+            //check if user has already favorited the post
             var favorite = await _context.Favorites
                 .Where(l => l.PostId == postFavoriteVM.PostId && l.UserId == loggedInUserId)
                 .FirstOrDefaultAsync();
@@ -129,11 +143,13 @@ namespace SocialProject.Controllers
             return RedirectToAction("Index");
         }
 
+
         [HttpPost]
         public async Task<IActionResult> TogglePostVisibility(PostVisibilityVM postVisibilityVM)
         {
             int loggedInUserId = 1;
 
+            //get post by id and loggedin user id
             var post = await _context.Posts
                 .FirstOrDefaultAsync(l => l.Id == postVisibilityVM.PostId && l.UserId == loggedInUserId);
 
@@ -147,12 +163,12 @@ namespace SocialProject.Controllers
             return RedirectToAction("Index");
         }
 
-
         [HttpPost]
         public async Task<IActionResult> AddPostComment(PostCommentVM postCommentVM)
         {
             int loggedInUserId = 1;
 
+            //Creat a post object
             var newComment = new Comment()
             {
                 UserId = loggedInUserId,
@@ -172,6 +188,7 @@ namespace SocialProject.Controllers
         {
             int loggedInUserId = 1;
 
+            //Creat a post object
             var newReport = new Report()
             {
                 UserId = loggedInUserId,
@@ -197,6 +214,7 @@ namespace SocialProject.Controllers
 
             return RedirectToAction("Index");
         }
+
         [HttpPost]
         public async Task<IActionResult> PostRemove(PostRemoveVM postRemoveVM)
         {
@@ -211,6 +229,5 @@ namespace SocialProject.Controllers
 
             return RedirectToAction("Index");
         }
-
     }
 }

@@ -155,6 +155,33 @@ namespace SocialProject.Migrations
                     b.ToTable("Reports");
                 });
 
+            modelBuilder.Entity("SocialProject.Data.Models.Story", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("DateCreated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("ImageUrl")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("UserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Story");
+                });
+
             modelBuilder.Entity("SocialProject.Data.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -266,6 +293,17 @@ namespace SocialProject.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("SocialProject.Data.Models.Story", b =>
+                {
+                    b.HasOne("SocialProject.Data.Models.User", "User")
+                        .WithMany("Stories")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("SocialProject.Data.Models.Post", b =>
                 {
                     b.Navigation("Comments");
@@ -288,6 +326,8 @@ namespace SocialProject.Migrations
                     b.Navigation("Posts");
 
                     b.Navigation("Reports");
+
+                    b.Navigation("Stories");
                 });
 #pragma warning restore 612, 618
         }
