@@ -8,6 +8,7 @@ using SocialProject.Data.Models;
 using SocialProject.ViewModals.Home;
 using System;
 using System.Diagnostics;
+using SocialProject.Data.Helpers;
 
 namespace SocialProject.Controllers
 {
@@ -80,7 +81,33 @@ namespace SocialProject.Controllers
             await _context.Posts.AddAsync(newPost);
             await _context.SaveChangesAsync();
 
-            //Redirect to the index page
+            //Find and store hashtags
+            var postHashtags = HashtagHelper.GetHashtags(post.Content);
+            foreach (var hashTag in postHashtags)
+            {
+                var hashtagDb = await _context.Hashtags.FirstOrDefaultAsync(n => n.Name == hashTag);
+                if (hashtagDb != null)
+                {
+                    hashtagDb.Count += 1;
+                    hashtagDb.DateUpdated = DateTime.UtcNow;
+
+                    _context.Hashtags.Update(hashtagDb);
+                    await _context.SaveChangesAsync();
+                }
+                else
+                {
+                    var newHashtag = new Hashtag()
+                    {
+                        Name = hashTag,
+                        Count = 1,
+                        DateCreated = DateTime.UtcNow,
+                        DateUpdated = DateTime.UtcNow
+                    };
+                    await _context.Hashtags.AddAsync(newHashtag);
+                    await _context.SaveChangesAsync();
+                }
+            }
+
             return RedirectToAction("Index");
         }
 
@@ -188,7 +215,6 @@ namespace SocialProject.Controllers
         {
             int loggedInUserId = 1;
 
-            //Creat a post object
             var newReport = new Report()
             {
                 UserId = loggedInUserId,
@@ -225,9 +251,23 @@ namespace SocialProject.Controllers
                 postDb.IsDeleted = true;
                 _context.Posts.Update(postDb);
                 await _context.SaveChangesAsync();
-            }
 
-            return RedirectToAction("Index");
+
+                var postHashtags = HashtagHelper.GetHashtags(postDb.Content);
+                foreach (var hashtag in postHashtags)
+                {
+                    var hashtagDb = await _context.Hashtags.FirstOrDefaultAsync(n => n.Name == hashtag);
+                    if (hashtagDb != null)
+                    {
+                        hashtagDb.Count -= 1;
+                        hashtagDb.DateUpdated = DateTime.UtcNow;
+
+                        _context.Hashtags.Update(hashtagDb);
+                        await _context.SaveChangesAsync();
+                    }
+                }
+            }
+                return RedirectToAction("Index");
+            }
         }
     }
-}
