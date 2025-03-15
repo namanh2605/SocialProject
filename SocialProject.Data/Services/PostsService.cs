@@ -36,20 +36,20 @@ namespace SocialProject.Data.Services
         {
             var allFavoritedPosts = await _context.Favorites
                 .Include(f => f.Post.Reports)
-                    .Where(n => n.UserId == loggedInUserId &&
+                .Include(f => f.Post.User)
+                .Include(f => f.Post.Comments)
+                    .ThenInclude(c => c.User)
+                .Include(f => f.Post.Likes)
+                .Include(f => f.Post.Favorites)
+                .Where(n => n.UserId == loggedInUserId &&
                     !n.Post.IsDeleted &&
                     n.Post.Reports.Count < 5)
-                .Include(n => n.Post)
+                .OrderByDescending(f => f.DateCreated)
                 .Select(n => n.Post)
-                    .Include(p => p.User)
-                    .Include(p => p.Comments)
-                        .ThenInclude(c => c.User)
-                    .Include(p => p.Likes)
                 .ToListAsync();
 
             return allFavoritedPosts;
         }
-
 
         public async Task AddPostCommentAsync(Comment comment)
         {
@@ -59,7 +59,6 @@ namespace SocialProject.Data.Services
 
         public async Task<Post> CreatePostAsync(Post post)
         {
-
             await _context.Posts.AddAsync(post);
             await _context.SaveChangesAsync();
 
@@ -120,21 +119,10 @@ namespace SocialProject.Data.Services
                 var newFavorite = new Favorite()
                 {
                     PostId = postId,
-                    UserId = userId
+                    UserId = userId,
+                    DateCreated = DateTime.UtcNow
                 };
                 await _context.Favorites.AddAsync(newFavorite);
-                await _context.SaveChangesAsync();
-            }
-        }
-        public async Task TogglePostVisibilityAsync(int postId, int userId)
-        {
-            var post = await _context.Posts
-                .FirstOrDefaultAsync(l => l.Id == postId && l.UserId == userId);
-
-            if (post != null)
-            {
-                post.IsPrivate = !post.IsPrivate;
-                _context.Posts.Update(post);
                 await _context.SaveChangesAsync();
             }
         }
@@ -158,6 +146,19 @@ namespace SocialProject.Data.Services
                     UserId = userId
                 };
                 await _context.Likes.AddAsync(newLike);
+                await _context.SaveChangesAsync();
+            }
+        }
+
+        public async Task TogglePostVisibilityAsync(int postId, int userId)
+        {
+            var post = await _context.Posts
+                .FirstOrDefaultAsync(l => l.Id == postId && l.UserId == userId);
+
+            if (post != null)
+            {
+                post.IsPrivate = !post.IsPrivate;
+                _context.Posts.Update(post);
                 await _context.SaveChangesAsync();
             }
         }
