@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data;
 using SocialProject.Data.Helpers;
+using SocialProject.Data.Services;
 using System;
 
 
@@ -10,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<SocialMediaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+
+builder.Services.AddScoped<IPostsService, PostsService>();
+builder.Services.AddScoped<IHashtagsService, HashtagsService>();
+builder.Services.AddScoped<IStoriesService, StoriesService>();
+builder.Services.AddScoped<IFilesService, FilesService>();
+
 var app = builder.Build();
 
 using (var scope = app.Services.CreateScope())
