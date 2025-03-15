@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data;
 using SocialProject.Data.Helpers;
 using SocialProject.Data.Services;
+using Microsoft.AspNetCore.Identity;
 using System;
 
 
@@ -18,6 +20,13 @@ builder.Services.AddScoped<IHashtagsService, HashtagsService>();
 builder.Services.AddScoped<IStoriesService, StoriesService>();
 builder.Services.AddScoped<IFilesService, FilesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
+
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+     .AddEntityFrameworkStores<SocialMediaContext>()
+     .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -41,6 +50,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
