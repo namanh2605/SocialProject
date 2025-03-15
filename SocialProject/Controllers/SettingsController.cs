@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SocialProject.Data.Services;
 using SocialProject.ViewModals.Settings;
 
 namespace SocialProject.Controllers
 {
+    [Authorize]
     public class SettingsController : Controller
     {
         private readonly IUsersService _usersService;

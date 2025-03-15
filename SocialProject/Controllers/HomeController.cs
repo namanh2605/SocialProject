@@ -11,9 +11,11 @@ using System.Diagnostics;
 using SocialProject.Data.Helpers;
 using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SocialProject.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data.Models;
 
 namespace SocialProject.Data;
 
-public partial class SocialMediaContext : DbContext
+public partial class SocialMediaContext : IdentityDbContext<User, IdentityRole<int>, int>
 {
     public SocialMediaContext()
     {
@@ -99,5 +101,13 @@ public partial class SocialMediaContext : DbContext
        
 
         base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<User>().ToTable("Users");
+        modelBuilder.Entity<IdentityRole<int>>().ToTable("Roles");
+        modelBuilder.Entity<IdentityUserRole<int>>().ToTable("UserRoles");
+        modelBuilder.Entity<IdentityUserClaim<int>>().ToTable("UserClaims");
+        modelBuilder.Entity<IdentityUserLogin<int>>().ToTable("UserLogins");
+        modelBuilder.Entity<IdentityRoleClaim<int>>().ToTable("RoleClaims");
+        modelBuilder.Entity<IdentityUserToken<int>>().ToTable("UserTokens");
     }
 }

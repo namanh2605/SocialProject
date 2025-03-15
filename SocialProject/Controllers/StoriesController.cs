@@ -6,9 +6,11 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SocialProject.Controllers
 {
+    [Authorize]
     public class StoriesController : Controller
     {
         private readonly IStoriesService _storiesService;

@@ -1,4 +1,6 @@
-﻿using SocialProject.Data.Models;
+﻿using Microsoft.AspNetCore.Identity;
+using SocialProject.Data.Constants;
+using SocialProject.Data.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,43 +11,89 @@ namespace SocialProject.Data.Helpers
 {
     public static class DbInitializer
     {
-        public static async Task SeedAsync(SocialMediaContext socialMediaContext)
+        public static async Task SeedUsersAndRolesAsync(UserManager<User> userManager, RoleManager<IdentityRole<int>> roleManager)
         {
-            if (!socialMediaContext.Users.Any() && !socialMediaContext.Posts.Any())
+            if (!roleManager.Roles.Any())
             {
+                foreach (var roleName in AppRoles.All)
+                {
+                    if (!await roleManager.RoleExistsAsync(roleName))
+                    {
+                        await roleManager.CreateAsync(new IdentityRole<int>(roleName));
+                    }
+                }
+            }
+
+            //Users with Roles
+            if (!userManager.Users.Any(n => !string.IsNullOrEmpty(n.Email)))
+            {
+                var userPassword = "Coding@1234?";
                 var newUser = new User()
                 {
-                    FullName = "Cristiano Ronaldo\r\n",
-                    ProfilePictureUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFc0Cry8E_MF-5Qkl5umnXnZ77LI0B8tYKTn-nIG48KTFKnzxLHhIP2Usqb8Hsq0ERpH8_pM0M06a1kB-A0CToMw"
+                    UserName = "ervis.trupja",
+                    Email = "ervis@trupja.com",
+                    FullName = "Ervis Trupja",
+                    ProfilePictureUrl = "https://img-b.udemycdn.com/user/200_H/16004620_10db_5.jpg",
+                    EmailConfirmed = true
                 };
-                await socialMediaContext.Users.AddAsync(newUser);
-                await socialMediaContext.SaveChangesAsync();
 
-                var newPostWithoutImage = new Post()
+                var result = await userManager.CreateAsync(newUser, userPassword);
+                if (result.Succeeded)
+                    await userManager.AddToRoleAsync(newUser, AppRoles.User);
+
+
+                var newAdmin = new User()
                 {
-                    Content = "This is going to be our first post which is being loaded from the database and it has been created using our test user.",
-                    ImageUrl = "",
-                    NrOfReports = 0,
-                    DateCreated = DateTime.UtcNow,
-                    DateUpdated = DateTime.UtcNow,
-
-                    UserId = newUser.Id
+                    UserName = "admin.admin",
+                    Email = "admin@trupja.com",
+                    FullName = "Ervis Admin",
+                    ProfilePictureUrl = "https://img-b.udemycdn.com/user/200_H/16004620_10db_5.jpg",
+                    EmailConfirmed = true
                 };
 
-                var newPostWithImage = new Post()
-                {
-                    Content = "This is going to be our first post which is being loaded from the database and it has been created using our test user. This post has an image",
-                    ImageUrl = "https://unsplash.com/photos/foggy-mountain-summit-1Z2niiBPg5A",
-                    NrOfReports = 0,
-                    DateCreated = DateTime.UtcNow,
-                    DateUpdated = DateTime.UtcNow,
-
-                    UserId = newUser.Id
-                };
-
-                await socialMediaContext.Posts.AddRangeAsync(newPostWithoutImage, newPostWithImage);
-                await socialMediaContext.SaveChangesAsync();
+                var resultNewAdmin = await userManager.CreateAsync(newAdmin, userPassword);
+                if (resultNewAdmin.Succeeded)
+                    await userManager.AddToRoleAsync(newAdmin, AppRoles.Admin);
             }
+        }
+
+        public static async Task SeedAsync(SocialMediaContext appDbContext)
+        {
+            //if (!appDbContext.Users.Any() && !appDbContext.Posts.Any())
+            //{
+            //    var newUser = new User()
+            //    {
+            //        FullName = "Ervis Trupja",
+            //        ProfilePictureUrl = "https://img-b.udemycdn.com/user/200_H/16004620_10db_5.jpg"
+            //    };
+            //    await appDbContext.Users.AddAsync(newUser);
+            //    await appDbContext.SaveChangesAsync();
+
+            //    var newPostWithoutImage = new Post()
+            //    {
+            //        Content = "This is going to be our first post which is being loaded from the database and it has been created using our test user.",
+            //        ImageUrl = "",
+            //        NrOfReports = 0,
+            //        DateCreated = DateTime.UtcNow,
+            //        DateUpdated = DateTime.UtcNow,
+
+            //        UserId = newUser.Id
+            //    };
+
+            //    var newPostWithImage = new Post()
+            //    {
+            //        Content = "This is going to be our first post which is being loaded from the database and it has been created using our test user. This post has an image",
+            //        ImageUrl = "https://unsplash.com/photos/foggy-mountain-summit-1Z2niiBPg5A",
+            //        NrOfReports = 0,
+            //        DateCreated = DateTime.UtcNow,
+            //        DateUpdated = DateTime.UtcNow,
+
+            //        UserId = newUser.Id
+            //    };
+
+            //    await appDbContext.Posts.AddRangeAsync(newPostWithoutImage, newPostWithImage);
+            //    await appDbContext.SaveChangesAsync();
+            //}
         }
     }
 }
