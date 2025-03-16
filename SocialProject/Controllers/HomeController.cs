@@ -13,6 +13,8 @@ using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
 using Microsoft.AspNetCore.Authorization;
 using SocialProject.Controllers.Base;
+using Microsoft.AspNetCore.SignalR;
+using SocialProject.Hubs;
 
 namespace SocialProject.Controllers
 {
@@ -23,16 +25,19 @@ namespace SocialProject.Controllers
         private readonly IPostsService _postsService;
         private readonly IHashtagsService _hashtagsService;
         private readonly IFilesService _filesService;
+        private readonly IHubContext<NotificationHub> _hubContext;
 
         public HomeController(ILogger<HomeController> logger,
             IPostsService postsService,
             IHashtagsService hashtagsService,
-            IFilesService filesService)
+            IFilesService filesService,
+            IHubContext<NotificationHub> hubContext)
         {
             _logger = logger;
             _postsService = postsService;
             _hashtagsService = hashtagsService;
             _filesService = filesService;
+            _hubContext = hubContext;
         }
 
 
@@ -90,6 +95,11 @@ namespace SocialProject.Controllers
             await _postsService.TogglePostLikeAsync(postLikeVM.PostId, loggedInUserId.Value);
 
             var post = await _postsService.GetPostByIdAsync(postLikeVM.PostId);
+
+
+            await _hubContext.Clients.User(post.UserId.ToString())
+                 .SendAsync("ReceiveNotification", "new");
+
             return PartialView("Home/_Post", post);
         }
 
