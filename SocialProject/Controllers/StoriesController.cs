@@ -7,11 +7,12 @@ using Microsoft.EntityFrameworkCore;
 using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
 using Microsoft.AspNetCore.Authorization;
+using SocialProject.Controllers.Base;
 
 namespace SocialProject.Controllers
 {
     [Authorize]
-    public class StoriesController : Controller
+    public class StoriesController : BaseController
     {
         private readonly IStoriesService _storiesService;
         private readonly IFilesService _filesService;
@@ -25,7 +26,8 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> CreateStory(StoryVM storyVM)
         {
-            int loggedInUserId = 1;
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
 
             var imageUploadPath = await _filesService.UploadImageAsync(storyVM.Image, ImageFileType.StoryImage);
 
@@ -34,7 +36,7 @@ namespace SocialProject.Controllers
                 DateCreated = DateTime.UtcNow,
                 IsDeleted = false,
                 ImageUrl = imageUploadPath,
-                UserId = loggedInUserId
+                UserId = loggedInUserId.Value
             };
 
             await _storiesService.CreateStoryAsync(newStory);

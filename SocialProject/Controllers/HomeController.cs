@@ -12,11 +12,12 @@ using SocialProject.Data.Helpers;
 using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
 using Microsoft.AspNetCore.Authorization;
+using SocialProject.Controllers.Base;
 
 namespace SocialProject.Controllers
 {
     [Authorize]
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IPostsService _postsService;
@@ -36,8 +37,10 @@ namespace SocialProject.Controllers
 
         public async Task<IActionResult> Index()
         {
-            int loggedInUserId = 1;
-            var allPosts = await _postsService.GetAllPostsAsync(loggedInUserId);
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+
+            var allPosts = await _postsService.GetAllPostsAsync(loggedInUserId.Value);
 
             return View(allPosts);
         }
@@ -52,8 +55,8 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePost(PostVM post)
         {
-            //Get the logged in user
-            int loggedInUser = 1;
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
 
 
             var imageUploadPath = await _filesService.UploadImageAsync(post.Image, ImageFileType.PostImage);
@@ -66,7 +69,7 @@ namespace SocialProject.Controllers
                 DateUpdated = DateTime.UtcNow,
                 ImageUrl = imageUploadPath,
                 NrOfReports = 0,
-                UserId = loggedInUser
+                UserId = loggedInUserId.Value,
             };
 
             await _postsService.CreatePostAsync(newPost);
@@ -80,8 +83,10 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> TogglePostLike(PostLikeVM postLikeVM)
         {
-            int loggedInUserId = 1;
-            await _postsService.TogglePostLikeAsync(postLikeVM.PostId, loggedInUserId);
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+
+            await _postsService.TogglePostLikeAsync(postLikeVM.PostId, loggedInUserId.Value);
 
             return RedirectToAction("Index");
         }
@@ -89,8 +94,9 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> TogglePostFavorite(PostFavoriteVM postFavoriteVM)
         {
-            int loggedInUserId = 1;
-            await _postsService.TogglePostFavoriteAsync(postFavoriteVM.PostId, loggedInUserId);
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+            await _postsService.TogglePostFavoriteAsync(postFavoriteVM.PostId, loggedInUserId.Value);
 
             return RedirectToAction("Index");
         }
@@ -99,8 +105,10 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> TogglePostVisibility(PostVisibilityVM postVisibilityVM)
         {
-            int loggedInUserId = 1;
-            await _postsService.TogglePostVisibilityAsync(postVisibilityVM.PostId, loggedInUserId);
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+            await _postsService.TogglePostVisibilityAsync(postVisibilityVM.PostId, loggedInUserId.Value);
+
 
             return RedirectToAction("Index");
         }
@@ -108,12 +116,13 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPostComment(PostCommentVM postCommentVM)
         {
-            int loggedInUserId = 1;
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
 
             //Creat a post object
             var newComment = new Comment()
             {
-                UserId = loggedInUserId,
+                UserId = loggedInUserId.Value,
                 PostId = postCommentVM.PostId,
                 Content = postCommentVM.Content,
                 DateCreated = DateTime.UtcNow,
@@ -128,8 +137,10 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> AddPostReport(PostReportVM postReportVM)
         {
-            int loggedInUserId = 1;
-            await _postsService.ReportPostAsync(postReportVM.PostId, loggedInUserId);
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+
+            await _postsService.ReportPostAsync(postReportVM.PostId, loggedInUserId.Value);
 
             return RedirectToAction("Index");
         }
