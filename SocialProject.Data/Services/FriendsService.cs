@@ -49,6 +49,11 @@ namespace SocialProject.Data.Services
 
         public async Task UpdateRequestAsync(int requestId, string newStatus)
         {
+            if (string.IsNullOrEmpty(newStatus))
+            {
+                throw new ArgumentException("Status cannot be null or empty.");
+            }
+
             var requestDb = await _context.FriendRequests.FirstOrDefaultAsync(n => n.Id == requestId);
             if (requestDb != null)
             {
@@ -70,6 +75,7 @@ namespace SocialProject.Data.Services
                 await _context.SaveChangesAsync();
             }
         }
+
 
         public async Task SendRequestAsync(int senderId, int receiverId)
         {

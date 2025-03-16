@@ -7,7 +7,7 @@ body {
 /* Text input area */
 textarea, input[type="text"] {
     background-color: #ffffff; /* White background for input fields */
-    color: #000; /* Black text */
+    color: #000 !important; /* Black text */
     border: 1px solid #ddd; /* Light border */
 }
 

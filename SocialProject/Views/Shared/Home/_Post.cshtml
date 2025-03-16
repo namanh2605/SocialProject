@@ -4,7 +4,15 @@
 @{
     int loggedInUserId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int result) ? result : 0;
 
-    TimeSpan timeSpanSincePosted = DateTime.UtcNow.Subtract(Model.DateCreated);
+    TimeSpan timeSpanSincePosted = TimeSpan.Zero; // Default value in case Model is null
+
+    if (Model != null)
+    {
+        timeSpanSincePosted = DateTime.UtcNow.Subtract(Model.DateCreated);
+    }
+    else
+    {
+    }
 
     string displayTime = timeSpanSincePosted switch
     {
@@ -29,8 +37,8 @@
     <div class="flex gap-3 sm:p-4 p-2.5 text-sm font-medium">
         <a asp-controller="Users" asp-action="Details" asp-route-userId="@Model.UserId">
             <img src="@(!string.IsNullOrEmpty(Model.User.ProfilePictureUrl) ?
-         Url.Content("~/"+Model.User.ProfilePictureUrl) :
-         Url.Content("~/images/avatar/user.png"))" class="w-9 h-9 rounded-full" />
+        Url.Content("~/"+Model.User.ProfilePictureUrl) :
+        Url.Content("~/images/avatar/user.png"))" class="w-9 h-9 rounded-full" />
         </a>
         <div class="flex-1">
             <a asp-controller="Users" asp-action="Details" asp-route-userId="@Model.UserId">
@@ -197,7 +205,6 @@
 
             <form asp-controller="Home" asp-action="AddPostComment" class="add-comment-form">
                 @Html.AntiForgeryToken()
-
                 <div class="sm:px-4 sm:py-3 p-2.5 border-t border-gray-100 flex items-center gap-1">
                     <a asp-controller="Users" asp-action="Detalis" asp-route-userId="@Model.UserId">
                         <img src="@(string.IsNullOrEmpty(Model.User.ProfilePictureUrl) ? Url.Content("~/images/avatar/user.png") : Url.Content(Model.User.ProfilePictureUrl))" class="w-6 h-6 rounded-full" />

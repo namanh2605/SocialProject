@@ -25,19 +25,22 @@ namespace SocialProject.Controllers
         private readonly IPostsService _postsService;
         private readonly IHashtagsService _hashtagsService;
         private readonly IFilesService _filesService;
+        private readonly INotificationsService _notificationService;
         private readonly IHubContext<NotificationHub> _hubContext;
 
         public HomeController(ILogger<HomeController> logger,
             IPostsService postsService,
             IHashtagsService hashtagsService,
             IFilesService filesService,
-            IHubContext<NotificationHub> hubContext)
+            IHubContext<NotificationHub> hubContext,
+            INotificationsService notificationService)
         {
             _logger = logger;
             _postsService = postsService;
             _hashtagsService = hashtagsService;
             _filesService = filesService;
             _hubContext = hubContext;
+            _notificationService = notificationService;
         }
 
 
@@ -54,7 +57,13 @@ namespace SocialProject.Controllers
         public async Task<IActionResult> Details(int postId)
         {
             var post = await _postsService.GetPostByIdAsync(postId);
-            return View(post);
+
+            if (post == null)
+            {
+                return View();  // Handle if the post is not found
+            }
+
+            return View(post);  // Pass the valid model to the view
         }
 
 
@@ -178,5 +187,6 @@ namespace SocialProject.Controllers
 
             return RedirectToAction("Index");
         }
+       
     }
 }

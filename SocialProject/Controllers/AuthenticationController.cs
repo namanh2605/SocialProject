@@ -161,12 +161,18 @@ namespace SocialProject.Controllers
         public async Task<IActionResult> ExternalLoginCallback()
         {
             var info = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-            if (info == null)
+            if (info?.Principal == null)
+            {
                 return RedirectToAction("Login");
+            }
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            var user = await _userManager.FindByEmailAsync(email);
+            if (string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction("Login");
+            }
 
+            var user = await _userManager.FindByEmailAsync(email);
             if (user == null)
             {
                 var newUser = new User()
@@ -182,7 +188,6 @@ namespace SocialProject.Controllers
                     await _userManager.AddToRoleAsync(newUser, AppRoles.User);
                     await _userManager.AddClaimAsync(newUser, new Claim(CustomClaim.FullName, newUser.FullName));
                     await _signInManager.SignInAsync(newUser, isPersistent: false);
-
                     return RedirectToAction("Index", "Home");
                 }
             }
@@ -190,6 +195,7 @@ namespace SocialProject.Controllers
             await _signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }
+
 
         [Authorize]
         public async Task<IActionResult> Logout()
