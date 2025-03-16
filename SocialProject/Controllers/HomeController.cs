@@ -81,6 +81,7 @@ namespace SocialProject.Controllers
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> TogglePostLike(PostLikeVM postLikeVM)
         {
             var loggedInUserId = GetUserId();
@@ -88,7 +89,8 @@ namespace SocialProject.Controllers
 
             await _postsService.TogglePostLikeAsync(postLikeVM.PostId, loggedInUserId.Value);
 
-            return RedirectToAction("Index");
+            var post = await _postsService.GetPostByIdAsync(postLikeVM.PostId);
+            return PartialView("Home/_Post", post);
         }
 
         [HttpPost]
@@ -98,7 +100,8 @@ namespace SocialProject.Controllers
             if (loggedInUserId == null) return RedirectToLogin();
             await _postsService.TogglePostFavoriteAsync(postFavoriteVM.PostId, loggedInUserId.Value);
 
-            return RedirectToAction("Index");
+            var post = await _postsService.GetPostByIdAsync(postFavoriteVM.PostId);
+            return PartialView("Home/_Post", post);
         }
 
 
@@ -113,6 +116,7 @@ namespace SocialProject.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPostComment(PostCommentVM postCommentVM)
         {
             var loggedInUserId = GetUserId();
@@ -130,7 +134,8 @@ namespace SocialProject.Controllers
 
             await _postsService.AddPostCommentAsync(newComment);
 
-            return RedirectToAction("Index");
+            var post = await _postsService.GetPostByIdAsync(postCommentVM.PostId);
+            return PartialView("Home/_Post", post);
         }
 
         [HttpPost]
@@ -145,11 +150,13 @@ namespace SocialProject.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> RemovePostComment(RemoveCommentVM removeCommentVM)
         {
             await _postsService.RemovePostCommentAsync(removeCommentVM.CommentId);
 
-            return RedirectToAction("Index");
+            var post = await _postsService.GetPostByIdAsync(removeCommentVM.PostId);
+            return PartialView("Home/_Post", post);
         }
 
         [HttpPost]

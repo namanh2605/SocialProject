@@ -1,9 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace SocialProject.Views.Shared.Modals.Sidebar
+namespace SocialProject.Views.Friends
 {
-    public class _SuggestedFriendsModel : PageModel
+    public class IndexModel : PageModel
     {
         public void OnGet()
         {
