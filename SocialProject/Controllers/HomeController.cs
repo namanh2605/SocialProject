@@ -35,6 +35,7 @@ namespace SocialProject.Controllers
             _filesService = filesService;
         }
 
+
         public async Task<IActionResult> Index()
         {
             var loggedInUserId = GetUserId();
@@ -58,7 +59,6 @@ namespace SocialProject.Controllers
             var loggedInUserId = GetUserId();
             if (loggedInUserId == null) return RedirectToLogin();
 
-
             var imageUploadPath = await _filesService.UploadImageAsync(post.Image, ImageFileType.PostImage);
 
             //Create a new post
@@ -69,7 +69,7 @@ namespace SocialProject.Controllers
                 DateUpdated = DateTime.UtcNow,
                 ImageUrl = imageUploadPath,
                 NrOfReports = 0,
-                UserId = loggedInUserId.Value,
+                UserId = loggedInUserId.Value
             };
 
             await _postsService.CreatePostAsync(newPost);
@@ -108,7 +108,6 @@ namespace SocialProject.Controllers
             var loggedInUserId = GetUserId();
             if (loggedInUserId == null) return RedirectToLogin();
             await _postsService.TogglePostVisibilityAsync(postVisibilityVM.PostId, loggedInUserId.Value);
-
 
             return RedirectToAction("Index");
         }

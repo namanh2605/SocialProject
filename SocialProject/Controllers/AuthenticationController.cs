@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SocialProject.Data.Constants;
@@ -42,7 +43,7 @@ namespace SocialProject.Controllers
             if (!existingUserClaims.Any(c => c.Type == CustomClaim.FullName))
                 await _userManager.AddClaimAsync(existingUser, new Claim(CustomClaim.FullName, existingUser.FullName));
 
-            var result = await _signInManager.PasswordSignInAsync(loginVM.Email, loginVM.Password, false, false);
+            var result = await _signInManager.PasswordSignInAsync(existingUser.UserName, loginVM.Password, false, false);
 
             if (result.Succeeded)
                 return RedirectToAction("Index", "Home");
@@ -125,6 +126,69 @@ namespace SocialProject.Controllers
             }
 
             return RedirectToAction("Index", "Settings");
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> UpdateProfile(UpdateProfileVM profileVM)
+        {
+            var loggedInUser = await _userManager.GetUserAsync(User);
+            if (loggedInUser == null)
+                return RedirectToAction("Login");
+
+            loggedInUser.FullName = profileVM.FullName;
+            loggedInUser.UserName = profileVM.UserName;
+            loggedInUser.Bio = profileVM.Bio;
+
+            var result = await _userManager.UpdateAsync(loggedInUser);
+            if (!result.Succeeded)
+            {
+                TempData["UserProfileError"] = "User profile could not be updated";
+                TempData["ActiveTab"] = "Profile";
+            }
+
+            await _signInManager.RefreshSignInAsync(loggedInUser);
+            return RedirectToAction("Index", "Settings");
+        }
+
+
+        public IActionResult ExternalLogin(string provider)
+        {
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Authentication");
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl);
+            return Challenge(properties, provider);
+        }
+
+        public async Task<IActionResult> ExternalLoginCallback()
+        {
+            var info = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
+            if (info == null)
+                return RedirectToAction("Login");
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                var newUser = new User()
+                {
+                    Email = email,
+                    UserName = email,
+                    FullName = info.Principal.FindFirstValue(ClaimTypes.Name),
+                    EmailConfirmed = true
+                };
+                var result = await _userManager.CreateAsync(newUser);
+                if (result.Succeeded)
+                {
+                    await _userManager.AddToRoleAsync(newUser, AppRoles.User);
+                    await _userManager.AddClaimAsync(newUser, new Claim(CustomClaim.FullName, newUser.FullName));
+                    await _signInManager.SignInAsync(newUser, isPersistent: false);
+
+                    return RedirectToAction("Index", "Home");
+                }
+            }
+
+            await _signInManager.SignInAsync(user, isPersistent: false);
+            return RedirectToAction("Index", "Home");
         }
 
         [Authorize]

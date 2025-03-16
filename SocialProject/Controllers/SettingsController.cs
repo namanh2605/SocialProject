@@ -26,8 +26,6 @@ namespace SocialProject.Controllers
 
         public async Task<IActionResult> Index()
         {
-           
-
             var loggedInUser = await _userManager.GetUserAsync(User);
             return View(loggedInUser);
         }
