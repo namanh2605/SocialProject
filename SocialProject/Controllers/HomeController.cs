@@ -14,7 +14,8 @@ using SocialProject.Data.Helpers.Enums;
 using Microsoft.AspNetCore.Authorization;
 using SocialProject.Controllers.Base;
 using Microsoft.AspNetCore.SignalR;
-using SocialProject.Hubs;
+using SocialProject.Data.Hubs;
+using SocialProject.Data.Constants;
 
 namespace SocialProject.Controllers
 {
@@ -98,16 +99,15 @@ namespace SocialProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> TogglePostLike(PostLikeVM postLikeVM)
         {
-            var loggedInUserId = GetUserId();
-            if (loggedInUserId == null) return RedirectToLogin();
+            var userId = GetUserId();
+            var userName = GetUserFullName();
+            if (userId == null) return RedirectToLogin();
 
-            await _postsService.TogglePostLikeAsync(postLikeVM.PostId, loggedInUserId.Value);
-
+            var result = await _postsService.TogglePostLikeAsync(postLikeVM.PostId, userId.Value);
             var post = await _postsService.GetPostByIdAsync(postLikeVM.PostId);
 
-
-            await _hubContext.Clients.User(post.UserId.ToString())
-                 .SendAsync("ReceiveNotification", "new");
+            if (result.SendNotification && userId != post.UserId)
+                await _notificationService.AddNewNotificationAsync(post.UserId, NotificationType.Like, userName, postLikeVM.PostId);
 
             return PartialView("Home/_Post", post);
         }
@@ -115,13 +115,20 @@ namespace SocialProject.Controllers
         [HttpPost]
         public async Task<IActionResult> TogglePostFavorite(PostFavoriteVM postFavoriteVM)
         {
-            var loggedInUserId = GetUserId();
-            if (loggedInUserId == null) return RedirectToLogin();
-            await _postsService.TogglePostFavoriteAsync(postFavoriteVM.PostId, loggedInUserId.Value);
+            var userId = GetUserId();
+            var userName = GetUserFullName();
+            if (userId == null) return RedirectToLogin();
+            var result = await _postsService.TogglePostFavoriteAsync(postFavoriteVM.PostId, userId.Value);
 
             var post = await _postsService.GetPostByIdAsync(postFavoriteVM.PostId);
+
+            if (result.SendNotification && userId != post.UserId)
+                await _notificationService.AddNewNotificationAsync(post.UserId, NotificationType.Favorite, userName, postFavoriteVM.PostId);
+
+
             return PartialView("Home/_Post", post);
         }
+
 
 
         [HttpPost]
@@ -138,13 +145,14 @@ namespace SocialProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddPostComment(PostCommentVM postCommentVM)
         {
-            var loggedInUserId = GetUserId();
-            if (loggedInUserId == null) return RedirectToLogin();
+            var userId = GetUserId();
+            var userName = GetUserFullName();
+            if (userId == null) return RedirectToLogin();
 
             //Creat a post object
             var newComment = new Comment()
             {
-                UserId = loggedInUserId.Value,
+                UserId = userId.Value,
                 PostId = postCommentVM.PostId,
                 Content = postCommentVM.Content,
                 DateCreated = DateTime.UtcNow,
@@ -154,6 +162,9 @@ namespace SocialProject.Controllers
             await _postsService.AddPostCommentAsync(newComment);
 
             var post = await _postsService.GetPostByIdAsync(postCommentVM.PostId);
+            if (userId != post.UserId)
+                await _notificationService.AddNewNotificationAsync(post.UserId, NotificationType.Comment, userName, postCommentVM.PostId);
+
             return PartialView("Home/_Post", post);
         }
 

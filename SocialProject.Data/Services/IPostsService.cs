@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
+using SocialProject.Data.Dtos;
 using SocialProject.Data.Models;
 using System;
 using System.Collections.Generic;
@@ -18,9 +19,9 @@ namespace SocialProject.Data.Services
 
         Task AddPostCommentAsync(Comment comment);
         Task RemovePostCommentAsync(int commentId);
+        Task<GetNotificationDto> TogglePostLikeAsync(int postId, int userId);
 
-        Task TogglePostLikeAsync(int postId, int userId);
-        Task TogglePostFavoriteAsync(int postId, int userId);
+        Task<GetNotificationDto> TogglePostFavoriteAsync(int postId, int userId);
         Task TogglePostVisibilityAsync(int postId, int userId);
         Task ReportPostAsync(int postId, int userId);
     }

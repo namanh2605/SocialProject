@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using System;
 using SocialProject.Data.Models;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using SocialProject.Hubs;
+using SocialProject.Data.Hubs;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,6 +24,7 @@ builder.Services.AddScoped<IStoriesService, StoriesService>();
 builder.Services.AddScoped<IFilesService, FilesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
