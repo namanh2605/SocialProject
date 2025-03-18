@@ -46,7 +46,12 @@ namespace SocialProject.Controllers
             var result = await _signInManager.PasswordSignInAsync(existingUser.UserName, loginVM.Password, false, false);
 
             if (result.Succeeded)
-                return RedirectToAction("Index", "Home");
+            {
+                if (User.IsInRole(AppRoles.Admin))
+                    return RedirectToAction("Index", "Admin");
+                else
+                    return RedirectToAction("Index", "Home");
+            }
 
             ModelState.AddModelError("", "Invalid login attempt");
             return View(loginVM);
@@ -161,18 +166,12 @@ namespace SocialProject.Controllers
         public async Task<IActionResult> ExternalLoginCallback()
         {
             var info = await HttpContext.AuthenticateAsync(IdentityConstants.ExternalScheme);
-            if (info?.Principal == null)
-            {
+            if (info == null)
                 return RedirectToAction("Login");
-            }
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            if (string.IsNullOrEmpty(email))
-            {
-                return RedirectToAction("Login");
-            }
-
             var user = await _userManager.FindByEmailAsync(email);
+
             if (user == null)
             {
                 var newUser = new User()
@@ -188,6 +187,7 @@ namespace SocialProject.Controllers
                     await _userManager.AddToRoleAsync(newUser, AppRoles.User);
                     await _userManager.AddClaimAsync(newUser, new Claim(CustomClaim.FullName, newUser.FullName));
                     await _signInManager.SignInAsync(newUser, isPersistent: false);
+
                     return RedirectToAction("Index", "Home");
                 }
             }
@@ -195,7 +195,6 @@ namespace SocialProject.Controllers
             await _signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }
-
 
         [Authorize]
         public async Task<IActionResult> Logout()

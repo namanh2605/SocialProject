@@ -25,11 +25,13 @@ namespace SocialProject.Data.Services
                 .Select(n => n.SenderId == userId ? n.ReceiverId : n.SenderId)
                 .ToListAsync();
 
+            //pending requests
             var pendingRequestIds = await _context.FriendRequests
                 .Where(n => (n.SenderId == userId || n.ReceiverId == userId) && n.Status == FriendshipStatus.Pending)
                 .Select(n => n.SenderId == userId ? n.ReceiverId : n.SenderId)
                 .ToListAsync();
 
+            //get suggeted friends
             var suggestedFriends = await _context.Users
                 .Where(n => n.Id != userId &&
                 !existingFriendIds.Contains(n.Id) &&
@@ -46,14 +48,8 @@ namespace SocialProject.Data.Services
             return suggestedFriends;
         }
 
-
-        public async Task UpdateRequestAsync(int requestId, string newStatus)
+        public async Task<FriendRequest> UpdateRequestAsync(int requestId, string newStatus)
         {
-            if (string.IsNullOrEmpty(newStatus))
-            {
-                throw new ArgumentException("Status cannot be null or empty.");
-            }
-
             var requestDb = await _context.FriendRequests.FirstOrDefaultAsync(n => n.Id == requestId);
             if (requestDb != null)
             {
@@ -74,8 +70,9 @@ namespace SocialProject.Data.Services
                 await _context.Friendships.AddAsync(friendship);
                 await _context.SaveChangesAsync();
             }
-        }
 
+            return requestDb;
+        }
 
         public async Task SendRequestAsync(int senderId, int receiverId)
         {
@@ -99,6 +96,7 @@ namespace SocialProject.Data.Services
                 _context.Friendships.Remove(friendship);
                 await _context.SaveChangesAsync();
 
+                //find requests
                 var requests = await _context.FriendRequests
                     .Where(r => (r.SenderId == friendship.SenderId && r.ReceiverId == friendship.ReceiverId) ||
                     (r.SenderId == friendship.ReceiverId && r.ReceiverId == friendship.SenderId))
@@ -111,6 +109,7 @@ namespace SocialProject.Data.Services
                 }
             }
         }
+
         public async Task<List<FriendRequest>> GetSentFriendRequestAsync(int userId)
         {
             var friendRequestsSent = await _context.FriendRequests
@@ -132,6 +131,7 @@ namespace SocialProject.Data.Services
 
             return friendRequestsSent;
         }
+
         public async Task<List<Friendship>> GetFriendsAsync(int userId)
         {
             var friends = await _context.Friendships

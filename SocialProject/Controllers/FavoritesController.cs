@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SocialProject.Data.Constants;
 using SocialProject.Data.Services;
 using System.Security.Claims;
 
 namespace SocialProject.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = AppRoles.User)]
     public class FavoritesController : Controller
     {
         private readonly IPostsService _postsService;

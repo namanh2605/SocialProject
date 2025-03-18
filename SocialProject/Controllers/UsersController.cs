@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SocialProject.Controllers.Base;
+using SocialProject.Data.Constants;
 using SocialProject.Data.Models;
 using SocialProject.Data.Services;
 using SocialProject.ViewModals.Users;
 
 namespace SocialProject.Controllers
 {
+    [Authorize(Roles = AppRoles.User)]
     public class UsersController : BaseController
     {
         private readonly IUsersService _userService;

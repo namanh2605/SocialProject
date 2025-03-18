@@ -24,7 +24,6 @@ namespace SocialProject.Data.Helpers
                 }
             }
 
-            //Users with Roles
             if (!userManager.Users.Any(n => !string.IsNullOrEmpty(n.Email)))
             {
                 var userPassword = "Coding@1234?";

@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using SocialProject.Controllers.Base;
+using SocialProject.Data.Constants;
 using SocialProject.Data.Models;
 using SocialProject.Data.Services;
 using SocialProject.ViewModals.Settings;
@@ -9,7 +10,8 @@ using System.Security.Claims;
 
 namespace SocialProject.Controllers
 {
-    [Authorize]
+
+    [Authorize(Roles = $"{AppRoles.User},{AppRoles.Admin}")]
     public class SettingsController : BaseController
     {
         private readonly IUsersService _usersService;

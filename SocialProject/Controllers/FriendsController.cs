@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SocialProject.Controllers.Base;
 using SocialProject.Data.Constants;
 using SocialProject.Data.Services;
@@ -6,13 +7,16 @@ using SocialProject.ViewModals.Friends;
 
 namespace SocialProject.Controllers
 {
+    [Authorize(Roles = AppRoles.User)]
     public class FriendsController : BaseController
     {
-        public readonly IFriendsService _friendsService;
+        private readonly IFriendsService _friendsService;
+        private readonly INotificationsService _notificationsService;
 
-        public FriendsController(IFriendsService friendsService)
+        public FriendsController(IFriendsService friendsService, INotificationsService notificationsService)
         {
             _friendsService = friendsService;
+            _notificationsService = notificationsService;
         }
 
         public async Task<IActionResult> Index()
@@ -34,16 +38,28 @@ namespace SocialProject.Controllers
         public async Task<IActionResult> SendFriendRequest(int receiverId)
         {
             var userId = GetUserId();
+            var userName = GetUserFullName();
             if (!userId.HasValue) RedirectToLogin();
 
             await _friendsService.SendRequestAsync(userId.Value, receiverId);
+
+            await _notificationsService.AddNewNotificationAsync(receiverId, NotificationType.FriendRequest, userName, null);
+
             return RedirectToAction("Index", "Home");
         }
 
         [HttpPost]
         public async Task<IActionResult> UpdateFriendRequest(int requestId, string status)
         {
-            await _friendsService.UpdateRequestAsync(requestId, status);
+            var userId = GetUserId();
+            var userName = GetUserFullName();
+            if (!userId.HasValue) RedirectToLogin();
+
+            var request = await _friendsService.UpdateRequestAsync(requestId, status);
+
+            if (status == FriendshipStatus.Accepted)
+                await _notificationsService.AddNewNotificationAsync(request.SenderId, NotificationType.FriendRequestApproved, userName, null);
+
             return RedirectToAction("Index");
         }
 

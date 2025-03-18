@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using SocialProject.Controllers.Base;
+using SocialProject.Data.Constants;
 using SocialProject.Data.Services;
 
 namespace SocialProject.Controllers
 {
-        public class NotificationsController : BaseController
+    [Authorize(Roles = AppRoles.User)]
+    public class NotificationsController : BaseController
         {
             private readonly INotificationsService _notificationsService;
             public NotificationsController(INotificationsService notificationsService)

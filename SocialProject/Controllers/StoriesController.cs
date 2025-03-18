@@ -8,10 +8,11 @@ using SocialProject.Data.Services;
 using SocialProject.Data.Helpers.Enums;
 using Microsoft.AspNetCore.Authorization;
 using SocialProject.Controllers.Base;
+using SocialProject.Data.Constants;
 
 namespace SocialProject.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = AppRoles.User)]
     public class StoriesController : BaseController
     {
         private readonly IStoriesService _storiesService;
