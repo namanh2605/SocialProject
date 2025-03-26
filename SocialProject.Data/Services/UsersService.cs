@@ -45,5 +45,11 @@ namespace SocialProject.Data.Services
 
             return allPosts;
         }
+        public async Task<List<User>> SearchUsersAsync(string query, int userId)
+        {
+            return await _appDbContext.Users
+                .Where(u => u.FullName.Contains(query) || u.Email.Contains(query))
+                .ToListAsync();
+        }
     }
 }

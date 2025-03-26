@@ -209,5 +209,12 @@ namespace SocialProject.Data.Services
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<List<Post>> SearchPostsAsync(string query, int userId)
+        {
+            return await _context.Posts
+                .Where(p => p.Content.Contains(query))
+                .ToListAsync();
+        }
+
     }
 }

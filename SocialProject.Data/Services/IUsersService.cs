@@ -12,5 +12,6 @@ namespace SocialProject.Data.Services
         Task<User> GetUser(int loggedInUserId);
         Task UpdateUserProfilePicture(int loggedInUserId, string profilePictureUrl);
         Task<List<Post>> GetUserPosts(int userId);
+        Task<List<User>> SearchUsersAsync(string query, int userId);
     }
 }

@@ -24,5 +24,6 @@ namespace SocialProject.Data.Services
         Task<GetNotificationDto> TogglePostFavoriteAsync(int postId, int userId);
         Task TogglePostVisibilityAsync(int postId, int userId);
         Task ReportPostAsync(int postId, int userId);
+        Task<List<Post>> SearchPostsAsync(string query, int userId);
     }
 }

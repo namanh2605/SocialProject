@@ -17,6 +17,7 @@ namespace SocialProject.Data.Services
         Task<List<FriendRequest>> GetSentFriendRequestAsync(int userId);
         Task<List<FriendRequest>> GetReceivedFriendRequestAsync(int userId);
         Task<List<Friendship>> GetFriendsAsync(int userId);
+        Task<List<User>> SearchFriendsAsync(string query, int userId);
 
     }
 }

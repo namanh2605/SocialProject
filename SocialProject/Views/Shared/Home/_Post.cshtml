@@ -4,7 +4,7 @@
 @{
     int loggedInUserId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out int result) ? result : 0;
 
-    TimeSpan timeSpanSincePosted = TimeSpan.Zero; // Default value in case Model is null
+    TimeSpan timeSpanSincePosted = TimeSpan.Zero; 
 
     if (Model != null)
     {

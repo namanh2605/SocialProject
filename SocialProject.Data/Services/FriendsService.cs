@@ -142,5 +142,22 @@ namespace SocialProject.Data.Services
 
             return friends;
         }
+        public async Task<List<User>> SearchFriendsAsync(string query, int userId)
+        {
+            var friendships = await _context.Friendships
+                .Where(f => (f.SenderId == userId || f.ReceiverId == userId) &&
+                            (f.Sender.FullName.Contains(query) || f.Receiver.FullName.Contains(query)))
+                .Include(f => f.Sender)  
+                .Include(f => f.Receiver) 
+                .ToListAsync();
+
+            var friends = friendships.Select(f => f.SenderId == userId ? f.Receiver : f.Sender)
+                                     .Distinct()  
+                                     .ToList();
+
+            return friends;
+        }
+
+
     }
 }

@@ -28,13 +28,19 @@ namespace SocialProject.Controllers
         private readonly IFilesService _filesService;
         private readonly INotificationsService _notificationService;
         private readonly IHubContext<NotificationHub> _hubContext;
+        private readonly IFriendsService _friendsService;
+        private readonly IUsersService _usersService;
+        private readonly SocialMediaContext _context;
 
         public HomeController(ILogger<HomeController> logger,
             IPostsService postsService,
             IHashtagsService hashtagsService,
             IFilesService filesService,
             IHubContext<NotificationHub> hubContext,
-            INotificationsService notificationService)
+            INotificationsService notificationService,
+            IFriendsService friendsService,
+            IUsersService usersService,
+            SocialMediaContext context)
         {
             _logger = logger;
             _postsService = postsService;
@@ -42,6 +48,10 @@ namespace SocialProject.Controllers
             _filesService = filesService;
             _hubContext = hubContext;
             _notificationService = notificationService;
+            _friendsService = friendsService;
+            _usersService = usersService;
+            _context = context;
+
         }
 
 
@@ -198,6 +208,28 @@ namespace SocialProject.Controllers
 
             return RedirectToAction("Index");
         }
-       
+
+
+        public async Task<IActionResult> Search(string query)
+        {
+            var loggedInUserId = GetUserId();
+            if (loggedInUserId == null) return RedirectToLogin();
+
+            if (string.IsNullOrEmpty(query))
+            {
+                return RedirectToAction("Index");
+            }
+
+            var users = await _context.Users
+                .Where(u => u.FullName.Contains(query) && u.Id != loggedInUserId.Value) 
+                .ToListAsync();
+
+            return View("SearchResults", users);
+        }
+
+
+
+
+
     }
 }
