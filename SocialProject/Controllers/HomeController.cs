@@ -16,6 +16,7 @@ using SocialProject.Controllers.Base;
 using Microsoft.AspNetCore.SignalR;
 using SocialProject.Data.Hubs;
 using SocialProject.Data.Constants;
+using System.Security.Claims;
 
 namespace SocialProject.Controllers
 {
@@ -189,15 +190,23 @@ namespace SocialProject.Controllers
             return RedirectToAction("Index");
         }
 
+
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> RemovePostComment(RemoveCommentVM removeCommentVM)
+        public async Task<IActionResult> RemovePostComment(int commentId, int postId)
         {
-            await _postsService.RemovePostCommentAsync(removeCommentVM.CommentId);
-
-            var post = await _postsService.GetPostByIdAsync(removeCommentVM.PostId);
-            return PartialView("Home/_Post", post);
+            var loggedInUserId = int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out var result) ? result : 0;
+            var canDelete = _postsService.CanDeleteComment(postId, commentId, loggedInUserId);
+            if (!canDelete)
+            {
+                return Forbid(); 
+            }
+            await _postsService.RemovePostCommentAsync(commentId);
+            var post = await _postsService.GetPostByIdAsync(postId);
+            return PartialView("Home/_Post", post); 
         }
+
+
 
         [HttpPost]
         public async Task<IActionResult> PostRemove(PostRemoveVM postRemoveVM)

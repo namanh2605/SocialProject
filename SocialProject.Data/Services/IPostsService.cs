@@ -25,5 +25,6 @@ namespace SocialProject.Data.Services
         Task TogglePostVisibilityAsync(int postId, int userId);
         Task ReportPostAsync(int postId, int userId);
         Task<List<Post>> SearchPostsAsync(string query, int userId);
+        bool CanDeleteComment(int postId, int commentId, int loggedInUserId);
     }
 }

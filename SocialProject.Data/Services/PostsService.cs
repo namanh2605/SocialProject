@@ -94,10 +94,34 @@ namespace SocialProject.Data.Services
 
             return postDb;
         }
-
+        public bool CanDeleteComment(int postId, int commentId, int loggedInUserId)
+        {
+            var post = _context.Posts
+                .Include(p => p.Comments)
+                .FirstOrDefault(p => p.Id == postId);
+            if (post == null)
+            {
+                return false; 
+            }
+            var comment = post.Comments.FirstOrDefault(c => c.Id == commentId);
+            if (comment == null)
+            {
+                return false; 
+            }
+            if (comment.UserId == loggedInUserId)
+            {
+                return true;
+            }
+            if (post.UserId == loggedInUserId)
+            {
+                return true;
+            }
+            return false;
+        }
         public async Task RemovePostCommentAsync(int commentId)
         {
-            var commentDb = _context.Comments.FirstOrDefault(n => n.Id == commentId);
+            var commentDb = await _context.Comments
+                .FirstOrDefaultAsync(n => n.Id == commentId);
 
             if (commentDb != null)
             {
@@ -105,6 +129,7 @@ namespace SocialProject.Data.Services
                 await _context.SaveChangesAsync();
             }
         }
+
 
         public async Task ReportPostAsync(int postId, int userId)
         {
