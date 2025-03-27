@@ -7,6 +7,9 @@ using SocialProject.Data.Models;
 using SocialProject.ViewModals.Authentication;
 using SocialProject.ViewModals.Settings;
 using System.Security.Claims;
+using System.Net.Mail;
+using System.Net;
+using SocialProject.Data.Services;
 
 namespace SocialProject.Controllers
 {
@@ -14,11 +17,14 @@ namespace SocialProject.Controllers
     {
         private readonly UserManager<User> _userManager;
         private readonly SignInManager<User> _signInManager;
+        private readonly IEmailSender _emailSender;
         public AuthenticationController(UserManager<User> userManager,
-            SignInManager<User> signInManager)
+            SignInManager<User> signInManager,
+            IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _emailSender = emailSender;
         }
 
         public async Task<IActionResult> Login()
@@ -201,6 +207,105 @@ namespace SocialProject.Controllers
         {
             await _signInManager.SignOutAsync();
             return RedirectToAction("Login");
+        }
+
+        public IActionResult ForgotPassword()
+        {
+            return View();
+        }
+        [HttpPost]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null || !await _userManager.IsEmailConfirmedAsync(user))
+            {
+                ModelState.AddModelError("", "Account not found or email not confirmed.");
+                return View(model);
+            }
+
+            var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var expirationTime = DateTime.UtcNow.AddMinutes(2);  
+            var resetLink = Url.Action("ResetPassword", "Authentication", new { token = token, email = model.Email }, Request.Scheme);
+
+            if (string.IsNullOrEmpty(model.Email))
+            {
+                ModelState.AddModelError("", "Email cannot be blank");
+                return View(model);
+            }
+
+            try
+            {
+                await _emailSender.SendEmailAsync(model.Email, "Reset your password", $"Please reset your password by clicking here: <a href='{resetLink}'>Reset Password</a>");
+                ModelState.AddModelError("", "Email sent successfully. Please check your inbox.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError("", $"Error sending email: {ex.Message}");
+                return View(model);
+            }
+
+            return View(model);
+        }
+
+
+        public IActionResult ForgotPasswordConfirmation()
+        {
+            return View();
+        }
+
+        public IActionResult ResetPassword(string token, string email)
+        {
+            if (token == null || email == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+            var model = new ResetPasswordVM { Token = token, Email = email };
+            return View(model);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordVM model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            if (model.NewPassword != model.ConfirmPassword)
+            {
+                ModelState.AddModelError("", "Password does not match, please re-enter.");
+                return View(model);
+            }
+
+            var user = await _userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+            var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+            if (result.Succeeded)
+            {
+                return RedirectToAction("Login", "Authentication");  
+            }
+
+            foreach (var error in result.Errors)
+            {
+                ModelState.AddModelError(string.Empty, error.Description);
+            }
+
+            return View(model);
+        }
+
+
+        public IActionResult ResetPasswordConfirmation()
+        {
+            return View();
         }
     }
 }

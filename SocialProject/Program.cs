@@ -17,6 +17,8 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<SocialMediaContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+
+
 builder.Services.AddScoped<INotificationsService, NotificationsService>();
 builder.Services.AddScoped<IPostsService, PostsService>();
 builder.Services.AddScoped<IHashtagsService, HashtagsService>();
@@ -25,6 +27,9 @@ builder.Services.AddScoped<IFilesService, FilesService>();
 builder.Services.AddScoped<IUsersService, UsersService>();
 builder.Services.AddScoped<IFriendsService, FriendsService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IEmailSender, EmailSender>();
+
+
 
 builder.Services.AddIdentity<User, IdentityRole<int>>(options =>
 {
