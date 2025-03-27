@@ -1,0 +1,71 @@
+﻿@model SocialProject.Data.Models.DashboardStatistics
+
+@{
+    Layout = "_Layout";
+}
+
+<main id="site__main" class="p-2.5 h-[calc(100vh-var(--m-top))] mt-[--m-top]">
+    <h3 class="text-3xl font-semibold mb-4 text-black">Admin Dashboard</h3>
+    <div class="w-full mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-medium text-black">Total Posts</h2>
+                <p class="text-3xl font-semibold text-black">@Model.TotalPosts</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-medium text-black">Total Users</h2>
+                <p class="text-3xl font-semibold text-black">@Model.TotalUsers</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-medium text-black">Total Likes</h2>
+                <p class="text-3xl font-semibold text-black">@Model.TotalLikes</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-medium text-black">Total Comments</h2>
+                <p class="text-3xl font-semibold text-black">@Model.TotalComments</p>
+            </div>
+            <div class="bg-white shadow-lg rounded-lg p-6">
+                <h2 class="text-xl font-medium text-black">Total Friend Requests</h2>
+                <p class="text-3xl font-semibold text-black">@Model.TotalFriendRequests</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white shadow-lg rounded-lg p-6">
+        <h2 class="text-xl font-medium">Statistics</h2>
+        <canvas id="postsChart"></canvas>
+    </div>
+
+</main>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        var ctx = document.getElementById('postsChart').getContext('2d');
+        var postsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Total Posts', 'Total Likes', 'Total Comments'],
+                datasets: [{
+                    label: 'Statistics',
+                    data: [
+        @Model.TotalPosts,
+        @Model.TotalLikes,
+        @Model.TotalComments
+                    ],
+                    backgroundColor: ['#36A2EB', '#FF6347', '#4CAF50'],
+                    borderColor: ['#36A2EB', '#FF6347', '#4CAF50'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+}

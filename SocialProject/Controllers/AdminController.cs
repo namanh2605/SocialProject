@@ -21,13 +21,11 @@ namespace SocialProject.Controllers
         {
             var reportedPosts = await _adminService.GetReportedPostsAsync();
 
-            if (reportedPosts == null || reportedPosts.Count == 0)
-            {
-                ViewBag.Message = "No reported posts found.";
-            }
-
             return View(reportedPosts);
         }
+
+
+       
         [HttpPost]
         public async Task<IActionResult> ApproveReport(int postId)
         {
@@ -40,6 +38,11 @@ namespace SocialProject.Controllers
         {
             await _adminService.RejectReportAsync(postId);
             return RedirectToAction("Index");
+        }
+        public async Task<IActionResult> Dashboard()
+        {
+            var statistics = await _adminService.GetDashboardStatisticsAsync();
+            return View(statistics);  
         }
     }
 }

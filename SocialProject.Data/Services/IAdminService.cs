@@ -13,5 +13,12 @@ namespace SocialProject.Data.Services
         Task<List<Post>> GetReportedPostsAsync();
         Task ApproveReportAsync(int postId);
         Task RejectReportAsync(int postId);
+
+        Task<DashboardStatistics> GetDashboardStatisticsAsync();
+        Task<int> GetTotalPostsAsync();
+        Task<int> GetTotalUsersAsync();
+        Task<int> GetTotalLikesAsync();
+        Task<int> GetTotalCommentsAsync();
+        Task<int> GetTotalFriendRequestsAsync();
     }
 }

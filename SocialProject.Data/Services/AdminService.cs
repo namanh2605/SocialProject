@@ -59,6 +59,43 @@ namespace SocialProject.Data.Services
                 await _context.SaveChangesAsync();
             }
         }
+        public async Task<int> GetTotalPostsAsync()
+        {
+            return await _context.Posts.CountAsync();
+        }
+
+
+        public async Task<int> GetTotalUsersAsync()
+        {
+            return await _context.Users.CountAsync();
+        }
+
+        public async Task<int> GetTotalLikesAsync()
+        {
+            return await _context.Likes.CountAsync();
+        }
+
+        public async Task<int> GetTotalCommentsAsync()
+        {
+            return await _context.Comments.CountAsync();
+        }
+
+        public async Task<int> GetTotalFriendRequestsAsync()
+        {
+            return await _context.FriendRequests.CountAsync();
+        }
+
+        public async Task<DashboardStatistics> GetDashboardStatisticsAsync()
+        {
+            return new DashboardStatistics
+            {
+                TotalPosts = await GetTotalPostsAsync(),
+                TotalUsers = await GetTotalUsersAsync(),
+                TotalLikes = await GetTotalLikesAsync(),
+                TotalComments = await GetTotalCommentsAsync(),
+                TotalFriendRequests = await GetTotalFriendRequestsAsync()
+            };
+        }
     }
 
     }
