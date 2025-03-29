@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialProject.Data;
 
@@ -11,9 +12,11 @@ using SocialProject.Data;
 namespace SocialProject.Migrations
 {
     [DbContext(typeof(SocialMediaContext))]
-    partial class SocialMediaContextModelSnapshot : ModelSnapshot
+    [Migration("20250327161025_Add_Entity_Message")]
+    partial class Add_Entity_Message
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -496,9 +499,6 @@ namespace SocialProject.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsOnline")
                         .HasColumnType("bit");
 
                     b.Property<bool>("LockoutEnabled")

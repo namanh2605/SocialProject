@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SocialProject.Data;
 
@@ -11,9 +12,11 @@ using SocialProject.Data;
 namespace SocialProject.Migrations
 {
     [DbContext(typeof(SocialMediaContext))]
-    partial class SocialMediaContextModelSnapshot : ModelSnapshot
+    [Migration("20250329070009_Added_IsOnline_User")]
+    partial class Added_IsOnline_User
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

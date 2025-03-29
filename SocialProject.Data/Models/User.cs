@@ -13,6 +13,8 @@ namespace SocialProject.Data.Models
         public string? ProfilePictureUrl { get; set; }
         public string? Bio { get; set; }
         public bool IsDeleted { get; set; }
+        public bool IsOnline { get; set; }
+
         public ICollection<Post> Posts { get; set; } = new List<Post>();
         public ICollection<Story> Stories { get; set; } = new List<Story>();
         public ICollection<Like> Likes { get; set; } = new List<Like>();

@@ -1,0 +1,243 @@
+﻿@using SocialProject.ViewModals.Chat
+@model ChatViewModel
+
+@{
+    Layout = "~/Views/Shared/Navigation/_ChatLayout.cshtml";
+}
+
+<link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+
+<style>
+    .sender {
+        justify-content: flex-end;
+        text-align: right;
+    }
+
+    .receiver {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .chat-container {
+        display: flex;
+        height: 100vh;
+    }
+
+    /* Chat Box on the left */
+    .chat-box {
+        flex: 3;
+        padding: 20px;
+        background-color: white;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Chat header */
+    .chat-header {
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+
+    /* Messages container */
+    .messages {
+        flex-grow: 1;
+        overflow-y: auto;
+        margin-bottom: 20px;
+    }
+
+    /* Each message container */
+    .message {
+        display: flex;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .message-content {
+        background-color: #e2e8f0;
+        padding: 10px;
+        border-radius: 10px;
+        max-width: 300px;
+    }
+
+    /* For message positioning: right for sender and left for receiver */
+    .message.sender {
+        justify-content: flex-end;
+    }
+
+    .message.receiver {
+        justify-content: flex-start;
+    }
+
+    /* Send message area */
+    .send-message {
+        display: flex;
+        gap: 10px;
+    }
+
+    #messageInput {
+        flex-grow: 1;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        resize: none;
+    }
+
+    #sendMessageButton {
+        background-color: #3182ce;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+
+        #sendMessageButton:hover {
+            background-color: #2b6cb0;
+        }
+
+    /* Right side: User list */
+    .user-list {
+        flex: 1;
+        background-color: #f7fafc;
+        padding: 20px;
+        overflow-y: auto;
+    }
+
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+        .user-item:hover {
+            background-color: #e2e8f0;
+        }
+
+    .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+
+    .user-name {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .status {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+    }
+
+        .status.offline {
+            background-color: red;
+        }
+
+        .status.online {
+            background-color: green;
+        }
+</style>
+
+<div class="chat-container">
+    <div class="chat-box">
+        <div class="chat-header">
+            <h3>Chat with @Model.ReceiverFullName</h3>
+            <img src="@(string.IsNullOrEmpty(Model.ReceiverProfilePictureUrl) ? Url.Content("~/images/avatar/user.png") : Url.Content("~/" + Model.ReceiverProfilePictureUrl))" alt="User Avatar" class="avatar">
+
+        </div>
+
+        <div class="messages mt-4 h-96 overflow-y-auto">
+            @foreach (var message in Model.Messages)
+            {
+                <div class="message @(message.SenderId == Model.SenderId ? "sender" : "receiver")">
+                    <div class="message-content">
+                        <p>@message.Content</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+
+        <div class="send-message">
+            <textarea id="messageInput" placeholder="Type your message..." rows="2"></textarea>
+            <button id="sendMessageButton">Send</button>
+        </div>
+    </div>
+
+    <div class="user-list">
+        @foreach (var user in Model.Users)
+        {
+            <div class="user-item" data-user-id="@user.Id" onclick="redirectToUser(@user.Id)">
+                <img src="@(string.IsNullOrEmpty(user.ProfilePictureUrl) ? Url.Content("~/images/avatar/user.png") :  Url.Content("~/" + user.ProfilePictureUrl))" alt="User" class="avatar">
+                <span class="user-name">@user.FullName</span>
+                <span class="status @(user.IsOnline ? "online" : "offline")"></span>
+            </div>
+        }
+    </div>
+
+</div>
+
+
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.min.js"></script>
+<script src="~/lib/microsoft/signalr/dist/browser/signalr.js"></script>
+
+<script>
+    function redirectToUser(userId) {
+        window.location.href = '@Url.Action("Chat", "Chat", new { receiverId = "__RECEIVER_ID__" })'.replace("__RECEIVER_ID__", userId);
+    }
+    const receiverId = @Model.ReceiverId;
+    const senderId = @Model.SenderId;
+
+    const connection = new signalR.HubConnectionBuilder().withUrl("/chatHub").build();
+
+    connection.start()
+        .then(() => {
+            console.log("SignalR Connected!");
+        })
+        .catch(err => {
+            console.error("SignalR Connection Error: ", err);
+        });
+
+    connection.on("ReceiveMessage", (senderId, message) => {
+        const messageContainer = document.createElement("div");
+        messageContainer.classList.add("message", "gap-3", "p-2");
+
+        const messageContent = document.createElement("div");
+        messageContent.classList.add("message-content", "bg-gray-200", "p-2", "rounded-lg", "max-w-xs");
+
+        const messageText = document.createElement("p");
+        messageText.textContent = message;
+
+        messageContent.appendChild(messageText);
+        messageContainer.appendChild(messageContent);
+
+        document.querySelector(".messages").appendChild(messageContainer);
+    });
+
+    connection.on("UpdateUserStatus", (userId, isOnline) => {
+        const userStatusElement = document.querySelector(`.user-item[data-user-id="${userId}"] .status`);
+        if (userStatusElement) {
+            userStatusElement.classList.toggle("online", isOnline);
+            userStatusElement.classList.toggle("offline", !isOnline);
+        }
+    });
+
+    document.getElementById("sendMessageButton").addEventListener("click", function () {
+        const messageInput = document.getElementById("messageInput");
+        const message = messageInput.value.trim();
+
+        if (message !== "") {
+            connection.invoke("SendMessage", senderId, receiverId, message)
+                .catch(err => {
+                    console.error("SendMessage Error: ", err);
+                    alert("An error occurred while sending the message.");
+                });
+            messageInput.value = "";
+        }
+    });
+</script>

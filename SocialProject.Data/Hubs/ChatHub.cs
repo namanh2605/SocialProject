@@ -1,31 +1,64 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using SocialProject.Data;
+using SocialProject.Data.Models;
 
-namespace SocialProject.Data.Hubs
+public class ChatHub : Hub
 {
-    public class ChatHub : Hub
-    {
-        public async Task SendMessage(string user, string message)
-        {
-            await Clients.All.SendAsync("ReceiveMessage", user, message);
-        }
-        public async Task SendMessageToGroup(string groupName, string user, string message)
-        {
-            await Clients.Group(groupName).SendAsync("ReceiveMessage", user, message);
-        }
+    private readonly SocialMediaContext _context;
 
-        public async Task JoinGroup(string groupName)
+    public ChatHub(SocialMediaContext context)
+    {
+        _context = context;
+    }
+
+    public async Task SendMessage(int senderId, int receiverId, string message)
+    {
+        var msg = new Message
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+            SenderId = senderId,
+            ReceiverId = receiverId,
+            Content = message,
+            SentAt = DateTime.UtcNow
+        };
+
+        _context.Messages.Add(msg);
+        await _context.SaveChangesAsync();
+
+        await Clients.User(receiverId.ToString()).SendAsync("ReceiveMessage", senderId, message);
+        await Clients.User(senderId.ToString()).SendAsync("ReceiveMessage", senderId, message); 
+    }
+
+
+    public async Task SendPrivateMessage(int receiverId, string message)
+    {
+        if (int.TryParse(Context.UserIdentifier, out int senderId))
+        {
+            await SendMessage(senderId, receiverId, message);
         }
-        public async Task LeaveGroup(string groupName)
+        else
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+            Console.WriteLine("Failed to convert senderId to integer.");
         }
     }
+    public override async Task OnConnectedAsync()
+    {
+        var userId = Context.UserIdentifier;
+        if (userId != null)
+        {
+            await Clients.All.SendAsync("UpdateUserStatus", userId, true);
+        }
+        await base.OnConnectedAsync();
+    }
+
+    public override async Task OnDisconnectedAsync(Exception exception)
+    {
+        var userId = Context.UserIdentifier;
+        if (userId != null)
+        {
+            await Clients.All.SendAsync("UpdateUserStatus", userId, false);
+        }
+        await base.OnDisconnectedAsync(exception);
+    }
+
 }

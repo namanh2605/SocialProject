@@ -157,6 +157,14 @@ namespace SocialProject.Data.Services
 
             return friends;
         }
+        public async Task<bool> IsFriendAsync(int userId, int friendId)
+        {
+            var friendship = await _context.Friendships
+                .FirstOrDefaultAsync(f => (f.SenderId == userId && f.ReceiverId == friendId) ||
+                                          (f.SenderId == friendId && f.ReceiverId == userId));
+
+            return friendship != null; 
+        }
 
 
     }

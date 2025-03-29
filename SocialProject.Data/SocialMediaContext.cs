@@ -30,7 +30,7 @@ public partial class SocialMediaContext : IdentityDbContext<User, IdentityRole<i
     public DbSet<FriendRequest> FriendRequests { get; set; }
     public DbSet<Friendship> Friendships { get; set; }
     public DbSet<Notification> Notifications { get; set; }
-
+    public DbSet<Message> Messages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -138,5 +138,18 @@ public partial class SocialMediaContext : IdentityDbContext<User, IdentityRole<i
             .WithMany()
             .HasForeignKey(fr => fr.ReceiverId)
             .OnDelete(DeleteBehavior.Cascade);
+
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Sender)
+            .WithMany() 
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.Restrict); 
+
+        modelBuilder.Entity<Message>()
+            .HasOne(m => m.Receiver)
+            .WithMany() 
+            .HasForeignKey(m => m.ReceiverId)
+            .OnDelete(DeleteBehavior.Restrict); 
     }
 }
