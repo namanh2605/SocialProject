@@ -10,6 +10,7 @@ using System.Security.Claims;
 using System.Net.Mail;
 using System.Net;
 using SocialProject.Data.Services;
+using Microsoft.EntityFrameworkCore;
 
 namespace SocialProject.Controllers
 {
@@ -176,9 +177,27 @@ namespace SocialProject.Controllers
                 return RedirectToAction("Login");
 
             var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-            var user = await _userManager.FindByEmailAsync(email);
 
-            if (user == null)
+            if (string.IsNullOrEmpty(email))
+            {
+                var username = info.Principal.FindFirstValue(ClaimTypes.Name);
+                var user = await _userManager.Users
+                    .FirstOrDefaultAsync(u => u.FullName == username);  
+
+
+                if (user != null && !string.IsNullOrEmpty(user.Email))
+                {
+                    await _signInManager.SignInAsync(user, isPersistent: false);
+                    return RedirectToAction("Index", "Home");
+                }
+
+                TempData["ErrorMessage"] = "Email không được cung cấp từ GitHub. Vui lòng nhập email của bạn.";
+                return RedirectToAction("ExternalLoginEmail", new { provider = info.Properties.Items.ContainsKey("provider") ? info.Properties.Items["provider"] : "unknown" });
+            }
+
+            var existingUser = await _userManager.FindByEmailAsync(email);
+
+            if (existingUser == null)
             {
                 var newUser = new User()
                 {
@@ -187,6 +206,7 @@ namespace SocialProject.Controllers
                     FullName = info.Principal.FindFirstValue(ClaimTypes.Name),
                     EmailConfirmed = true
                 };
+
                 var result = await _userManager.CreateAsync(newUser);
                 if (result.Succeeded)
                 {
@@ -198,9 +218,52 @@ namespace SocialProject.Controllers
                 }
             }
 
-            await _signInManager.SignInAsync(user, isPersistent: false);
+            await _signInManager.SignInAsync(existingUser, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }
+
+
+
+
+
+
+        public IActionResult ExternalLoginEmail(string provider)
+        {
+            ViewBag.Provider = provider;
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ExternalLoginEmail(string email, string provider)
+        {
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                return RedirectToAction(nameof(Login));
+            }
+
+            var user = new User
+            {
+                UserName = email,
+                Email = email,
+                FullName = info.Principal.FindFirstValue(ClaimTypes.Name),
+                EmailConfirmed = true
+            };
+
+            var result = await _userManager.CreateAsync(user);
+            if (result.Succeeded)
+            {
+                await _userManager.AddToRoleAsync(user, AppRoles.User);
+                await _userManager.AddClaimAsync(user, new Claim(CustomClaim.FullName, user.FullName));
+                await _signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Home");
+            }
+
+            TempData["ErrorMessage"] = "Có lỗi xảy ra khi tạo tài khoản.";
+            return RedirectToAction("Login");
+        }
+
+
 
         [Authorize]
         public async Task<IActionResult> Logout()
