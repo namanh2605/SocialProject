@@ -1,4 +1,4 @@
-Tất nhiên rồi! Dựa trên cấu trúc tệp tin từ dự án **SocialProject** mà bạn đã cung cấp (sử dụng .NET 8, ASP.NET Core, Entity Framework Core và SignalR), mình đã soạn một file `README.md` chuyên nghiệp và đầy đủ để bạn có thể dùng ngay cho repo của mình.
+
 
 ---
 
